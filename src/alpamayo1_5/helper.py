@@ -112,13 +112,10 @@ def create_message(
     if nav_text is not None:
         route_section = f"<|route_start|>{nav_text}<|route_end|>"
 
-    if nav_text is not None or use_nav_prompt:
-        prompt_text = (
-            "output the chain-of-thought reasoning of the driving process, "
-            "then output the future trajectory."
-        )
-    else:
-        prompt_text = "output the future trajectory."
+    prompt_text = (
+        "output the chain-of-thought reasoning of the driving process, "
+        "then output the future trajectory."
+    )
 
     user_text = f"{hist_traj_placeholder}{route_section}{prompt_text}"
 
