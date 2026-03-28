@@ -20,7 +20,7 @@ This fork adds **low-VRAM support** to run Alpamayo 1.5 on consumer GPUs with 8G
 - **4-bit NF4 quantization** via `bitsandbytes` to reduce memory footprint
 - **CPU offloading** with `device_map="auto"` and configurable memory limits
 - **Removed `flash-attn` dependency** — uses `eager` attention implementation instead
-- **Added `visualize_result.py`** — script to visualize inference outputs (camera grid + trajectory plot)
+- **Added `src/alpamayo1_5/visualize_result.py`** — script to visualize inference outputs (camera grid + trajectory plot)
 
 ### Quick Start (Low-VRAM)
 
