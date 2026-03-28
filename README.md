@@ -9,6 +9,34 @@
 
 </div>
 
+---
+
+## About This Fork
+
+This fork adds **low-VRAM support** to run Alpamayo 1.5 on consumer GPUs with 8GB VRAM (tested on RTX 4070 Laptop).
+
+### Key Changes
+
+- **4-bit NF4 quantization** via `bitsandbytes` to reduce memory footprint
+- **CPU offloading** with `device_map="auto"` and configurable memory limits
+- **Removed `flash-attn` dependency** — uses `eager` attention implementation instead
+- **Added `visualize_result.py`** — script to visualize inference outputs (camera grid + trajectory plot)
+
+### Quick Start (Low-VRAM)
+
+```bash
+# Install with CUDA support
+uv sync --active
+uv pip install torch==2.8.0+cu126 --index-url https://download.pytorch.org/whl/cu126
+
+# Run inference
+python src/alpamayo1_5/test_inference.py
+```
+
+See the modified `test_inference.py` for quantization configuration details.
+
+---
+
 **📖 Please read the [HuggingFace Model Card](https://huggingface.co/nvidia/Alpamayo-1.5-10B) first!**
 The model card contains comprehensive details on model architecture, inputs/outputs, licensing, and tested hardware configurations. This GitHub README focuses on setup, usage, and frequently asked questions.
 
