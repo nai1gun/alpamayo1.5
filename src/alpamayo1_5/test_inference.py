@@ -15,10 +15,11 @@
 
 """End-to-end example script for the inference pipeline.
 
-Loads a dataset, runs inference, and computes the minADE.
+Loads a dataset, runs inference, computes the minADE, and saves results for visualization.
 """
 
 import os
+from pathlib import Path
 import numpy as np
 import torch
 
@@ -39,9 +40,10 @@ from alpamayo1_5.models.alpamayo1_5 import Alpamayo1_5
 
 def main() -> None:
     """Run inference on an example clip and report minADE."""
-    clip_id = "030c760c-ae38-49aa-9ad8-f5650a545d26"
+    clip_id = "bd65ae5a-7c50-4d33-a953-bd382c108d04"
+    t0_us = 12_000_000  # "Yield to truck crossing intersection" scenario
     print(f"Loading dataset for clip_id: {clip_id}...")
-    data = load_physical_aiavdataset(clip_id, t0_us=5_100_000)
+    data = load_physical_aiavdataset(clip_id, t0_us=t0_us)
     print("Dataset loaded.")
     messages = helper.create_message(
         frames=data["image_frames"].flatten(0, 1), camera_indices=data["camera_indices"]
@@ -100,6 +102,24 @@ def main() -> None:
     print("minADE:", min_ade, "meters")
     if min_ade >= 1.0:
         print(f"WARNING: minADE ({min_ade:.2f}m) is above 1.0m. Model sampling can be stochastic.")
+
+    # Save results for visualization
+    results_dir = Path(__file__).parent.parent.parent / "results"
+    results_dir.mkdir(exist_ok=True)
+    results_path = results_dir / "inference_results.npz"
+
+    np.savez(
+        results_path,
+        clip_id=clip_id,
+        t0_us=t0_us,
+        cot=extra["cot"][0][0],
+        pred_xyz=pred_xyz.cpu().numpy(),
+        gt_future_xyz=data["ego_future_xyz"].cpu().numpy(),
+        image_frames=data["image_frames"].numpy(),
+        camera_indices=data["camera_indices"].numpy(),
+        min_ade=min_ade,
+    )
+    print(f"Results saved to: {results_path}")
 
 
 if __name__ == "__main__":

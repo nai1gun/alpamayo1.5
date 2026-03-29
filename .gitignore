@@ -214,4 +214,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-alpamayo_result.png
+# Inference results
+results/
