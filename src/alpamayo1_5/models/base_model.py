@@ -388,6 +388,37 @@ class ReasoningVLA(PreTrainedModel, TrajectoryFusionMixin):
         vlm_config.text_config.vocab_size = config.vocab_size
         vlm_config.vocab_size = config.vocab_size
         self.vlm = Qwen3VLForConditionalGeneration(vlm_config)
+        self._register_flattened_conv3d_weight_hook()
+
+    def _register_flattened_conv3d_weight_hook(self) -> None:
+        """Accept checkpoints that store the visual patch Conv3d weight flattened."""
+        try:
+            proj = self.vlm.model.visual.patch_embed.proj
+        except AttributeError:
+            return
+
+        if not isinstance(proj, torch.nn.Conv3d):
+            return
+
+        def reshape_flattened_conv3d_weight(
+            module: torch.nn.Conv3d,
+            state_dict: dict[str, torch.Tensor],
+            prefix: str,
+            local_metadata: dict[str, Any],
+            strict: bool,
+            missing_keys: list[str],
+            unexpected_keys: list[str],
+            error_msgs: list[str],
+        ) -> None:
+            weight_key = f"{prefix}weight"
+            weight = state_dict.get(weight_key)
+            if weight is None or weight.ndim != 2:
+                return
+            if weight.numel() != module.weight.numel() or weight.shape[0] != module.out_channels:
+                return
+            state_dict[weight_key] = weight.reshape(module.weight.shape)
+
+        proj.register_load_state_dict_pre_hook(reshape_flattened_conv3d_weight)
 
     def _initialize_trajectory_tokenizers(
         self, config: ReasoningVLAConfig, pretrained_modules: dict[str, Any]
